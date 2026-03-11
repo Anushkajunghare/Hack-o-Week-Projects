@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EngiQuiz — Engineering Assessment Platform</title>
+    <meta name="description"
+        content="5 complete engineering quizzes covering Electronics, Computer Science, Mechanics, Thermodynamics and Digital Logic for B.Tech students." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ══════════════════════════════════════
+   RESET & ROOT VARS
+══════════════════════════════════════ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        :root {
+            --cyan: #00d4ff;
+            --purple: #7c3aed;
+            --amber: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+            --pink: #ec4899;
+            --bg: #020817;
+            --card: rgba(10, 18, 40, 0.88);
+            --border: rgba(0, 212, 255, 0.18);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text)
+        }
+
+        /* ── Animated grid ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: linear-gradient(rgba(0, 212, 255, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.035) 1px, transparent 1px);
+            background-size: 55px 55px;
+            animation: gridMove 25s linear infinite;
+        }
+
+        @keyframes gridMove {
+            to {
+                background-position: 55px 55px
+            }
+        }
+
+        /* ── Orbs ── */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: .16;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .o1 {
+            width: 550px;
+            height: 550px;
+            background: var(--cyan);
+            top: -160px;
+            left: -160px;
+            animation: flt 14s ease-in-out infinite alternate
+        }
+
+        .o2 {
+            width: 450px;
+            height: 450px;
+            background: var(--purple);
+            bottom: -120px;
+            right: -120px;
+            animation: flt 11s ease-in-out infinite alternate-reverse
+        }
+
+        .o3 {
+            width: 320px;
+            height: 320px;
+            background: var(--amber);
+            top: 40%;
+            left: 40%;
+            animation: flt 9s ease-in-out infinite alternate
+        }
+
+        @keyframes flt {
+            from {
+                transform: translate(0, 0) scale(1)
+            }
+
+            to {
+                transform: translate(40px, 40px) scale(1.12)
+            }
+        }
+
+        /* ── Particles ── */
+        #cnv {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none
+        }
+
+        /* ── Progress bar ── */
+        #pbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            z-index: 50;
+            display: none
+        }
+
+        #pfill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+            transition: width .65s cubic-bezier(.4, 0, .2, 1);
+            box-shadow: 0 0 14px var(--cyan)
+        }
+
+        /* ── App shell ── */
+        #app {
+            position: relative;
+            z-index: 1;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden
+        }
+
+        /* ══════════════════════════════════════
+   SCREEN SYSTEM
+══════════════════════════════════════ */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .45s ease, transform .45s ease;
+            transform: translateY(18px) scale(.97);
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            opacity: 1;
+            transform: none;
+            pointer-events: all
+        }
+
+        /* Exit / enter animations */
+        .xl {
+            animation: xl .5s forwards
+        }
+
+        .xr {
+            animation: xr .5s forwards
+        }
+
+        .el {
+            animation: el .5s forwards
+        }
+
+        .er {
+            animation: er .5s forwards
+        }
+
+        .xflip {
+            animation: xflip .55s forwards
+        }
+
+        .eflip {
+            animation: eflip .55s forwards
+        }
+
+        .xglitch {
+            animation: xglitch .5s forwards
+        }
+
+        .eglitch {
+            animation: eglitch .5s forwards
+        }
+
+        .xzoom {
+            animation: xzoom .48s forwards
+        }
+
+        .ezoom {
+            animation: ezoom .48s forwards
+        }
+
+        .xup {
+            animation: xup .5s forwards
+        }
+
+        .eup {
+            animation: eup .5s forwards
+        }
+
+        .xdown {
+            animation: xdown .5s forwards
+        }
+
+        .edown {
+            animation: edown .5s forwards
+        }
+
+        .xfade {
+            animation: xfade .45s forwards
+        }
+
+        .efade {
+            animation: efade .45s forwards
+        }
+
+        @keyframes xl {
+            to {
+                opacity: 0;
+                transform: translateX(-100%) scale(.9)
+            }
+        }
+
+        @keyframes xr {
+            to {
+                opacity: 0;
+                transform: translateX(100%) scale(.9)
+            }
+        }
+
+        @keyframes el {
+            from {
+                opacity: 0;
+                transform: translateX(-100%) scale(.9)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes er {
+            from {
+                opacity: 0;
+                transform: translateX(100%) scale(.9)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes xflip {
+            to {
+                opacity: 0;
+                transform: perspective(900px) rotateY(90deg)
+            }
+        }
+
+        @keyframes eflip {
+            from {
+                opacity: 0;
+                transform: perspective(900px) rotateY(-90deg)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes xglitch {
+            0% {
+                transform: none
+            }
+
+            20% {
+                transform: skewX(12deg) translateX(-12px);
+                opacity: .6
+            }
+
+            40% {
+                transform: skewX(-8deg) translateX(10px)
+            }
+
+            60% {
+                transform: skewX(5deg) translateX(-6px)
+            }
+
+            80% {
+                transform: skewX(-2deg)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(-70px)
+            }
+        }
+
+        @keyframes eglitch {
+            0% {
+                opacity: 0;
+                transform: translateX(70px)
+            }
+
+            20% {
+                transform: skewX(-9deg) translateX(-9px);
+                opacity: .7
+            }
+
+            40% {
+                transform: skewX(6deg) translateX(6px)
+            }
+
+            60% {
+                transform: skewX(-3deg)
+            }
+
+            80% {
+                transform: skewX(1deg)
+            }
+
+            100% {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes xzoom {
+            to {
+                opacity: 0;
+                transform: scale(2.2)
+            }
+        }
+
+        @keyframes ezoom {
+            from {
+                opacity: 0;
+                transform: scale(.35)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes xup {
+            to {
+                opacity: 0;
+                transform: translateY(-80px) scale(.95)
+            }
+        }
+
+        @keyframes eup {
+            from {
+                opacity: 0;
+                transform: translateY(80px) scale(.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes xdown {
+            to {
+                opacity: 0;
+                transform: translateY(80px) scale(.95)
+            }
+        }
+
+        @keyframes edown {
+            from {
+                opacity: 0;
+                transform: translateY(-80px) scale(.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes xfade {
+            to {
+                opacity: 0;
+                transform: scale(.92)
+            }
+        }
+
+        @keyframes efade {
+            from {
+                opacity: 0;
+                transform: scale(1.06)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        /* ══════════════════════════════════════
+   CARD
+══════════════════════════════════════ */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 44px 50px;
+            max-width: 800px;
+            width: 100%;
+            backdrop-filter: blur(22px);
+            box-shadow: 0 0 70px rgba(0, 212, 255, 0.07), 0 30px 60px rgba(0, 0, 0, .55);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--ctop, linear-gradient(90deg, var(--cyan), var(--purple), var(--amber)))
+        }
+
+        .corner {
+            position: absolute;
+            width: 18px;
+            height: 18px
+        }
+
+        .ctla {
+            top: 14px;
+            left: 14px;
+            border-top: 2px solid var(--cyan);
+            border-left: 2px solid var(--cyan)
+        }
+
+        .ctra {
+            top: 14px;
+            right: 14px;
+            border-top: 2px solid var(--cyan);
+            border-right: 2px solid var(--cyan)
+        }
+
+        .cbla {
+            bottom: 14px;
+            left: 14px;
+            border-bottom: 2px solid var(--cyan);
+            border-left: 2px solid var(--cyan)
+        }
+
+        .cbra {
+            bottom: 14px;
+            right: 14px;
+            border-bottom: 2px solid var(--cyan);
+            border-right: 2px solid var(--cyan)
+        }
+
+        /* ══════════════════════════════════════
+   HOME SCREEN
+══════════════════════════════════════ */
+        .home-card {
+            max-width: 920px;
+            padding: 40px 44px
+        }
+
+        .brand {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            letter-spacing: 5px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-align: center
+        }
+
+        .logo {
+            font-size: 52px;
+            margin-bottom: 12px;
+            display: block;
+            text-align: center;
+            animation: logoBounce 3s ease-in-out infinite
+        }
+
+        @keyframes logoBounce {
+
+            0%,
+            100% {
+                transform: scale(1) rotate(0deg)
+            }
+
+            50% {
+                transform: scale(1.08) rotate(3deg)
+            }
+        }
+
+        h1.site-title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(22px, 3.5vw, 40px);
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(135deg, #fff 0%, var(--cyan) 50%, var(--purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            line-height: 1.2
+        }
+
+        .home-sub {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.7
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+            margin-bottom: 10px
+        }
+
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 22px 20px;
+            cursor: pointer;
+            transition: all .28s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity .3s;
+            background: var(--qgrad)
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--qcolor);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, .4)
+        }
+
+        .quiz-card:hover::before {
+            opacity: .07
+        }
+
+        .qc-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block
+        }
+
+        .qc-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: .5px;
+            color: var(--qcolor)
+        }
+
+        .qc-desc {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 14px
+        }
+
+        .qc-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .qc-tag {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 10px;
+            color: var(--muted)
+        }
+
+        .qc-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: var(--qcolor);
+            color: #000;
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace
+        }
+
+        /* ══════════════════════════════════════
+   QUESTION SCREEN
+══════════════════════════════════════ */
+        .q-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px
+        }
+
+        .q-num {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--cyan);
+            text-transform: uppercase
+        }
+
+        .q-timer {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Orbitron', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--amber);
+            transition: color .3s
+        }
+
+        .tdot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: tdotBlink 1s ease-in-out infinite
+        }
+
+        @keyframes tdotBlink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0
+            }
+        }
+
+        .q-topic-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(124, 58, 237, .14);
+            border: 1px solid rgba(124, 58, 237, .3);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 10px;
+            color: #a78bfa;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 18px
+        }
+
+        h2.q-text {
+            font-size: clamp(16px, 2.2vw, 23px);
+            font-weight: 600;
+            line-height: 1.55;
+            margin-bottom: 28px;
+            color: #f1f5f9
+        }
+
+        .opts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px
+        }
+
+        @media(max-width:560px) {
+            .opts {
+                grid-template-columns: 1fr
+            }
+
+            .card {
+                padding: 28px 20px
+            }
+
+            .home-card {
+                padding: 28px 18px
+            }
+        }
+
+        .opt {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1.5px solid rgba(255, 255, 255, 0.09);
+            border-radius: 13px;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: all .22s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            font-size: 13.5px;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .opt::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            opacity: 0;
+            transition: opacity .25s
+        }
+
+        .opt span {
+            position: relative;
+            z-index: 1
+        }
+
+        .opt-ltr {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: rgba(0, 212, 255, .1);
+            border: 1px solid rgba(0, 212, 255, .2);
+            display: grid;
+            place-items: center;
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--cyan);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            transition: all .22s;
+        }
+
+        .opt:hover {
+            border-color: var(--cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(0, 212, 255, .14)
+        }
+
+        .opt:hover::after {
+            opacity: .06
+        }
+
+        .opt:hover .opt-ltr {
+            background: var(--cyan);
+            color: #000;
+            border-color: var(--cyan)
+        }
+
+        .opt.sel {
+            border-color: var(--cyan);
+            background: rgba(0, 212, 255, .07)
+        }
+
+        .opt.sel .opt-ltr {
+            background: var(--cyan);
+            color: #000
+        }
+
+        .opt.ok {
+            border-color: var(--green);
+            background: rgba(16, 185, 129, .12);
+            animation: popOk .4s ease
+        }
+
+        .opt.ok .opt-ltr {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green)
+        }
+
+        .opt.bad {
+            border-color: var(--red);
+            background: rgba(239, 68, 68, .1);
+            animation: shakeNo .4s ease
+        }
+
+        .opt.bad .opt-ltr {
+            background: var(--red);
+            color: #fff;
+            border-color: var(--red)
+        }
+
+        .opt.off {
+            pointer-events: none
+        }
+
+        @keyframes popOk {
+            0% {
+                transform: scale(1)
+            }
+
+            40% {
+                transform: scale(1.04)
+            }
+
+            100% {
+                transform: scale(1)
+            }
+        }
+
+        @keyframes shakeNo {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            20% {
+                transform: translateX(-8px)
+            }
+
+            40% {
+                transform: translateX(8px)
+            }
+
+            60% {
+                transform: translateX(-5px)
+            }
+
+            80% {
+                transform: translateX(5px)
+            }
+        }
+
+        .fbmsg {
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            display: none
+        }
+
+        .fbmsg.show {
+            display: block
+        }
+
+        .fb-ok {
+            background: rgba(16, 185, 129, .14);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, .3)
+        }
+
+        .fb-bad {
+            background: rgba(239, 68, 68, .12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .28)
+        }
+
+        .btnNext {
+            display: none;
+            float: right;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            color: #fff;
+            border: none;
+            padding: 13px 28px;
+            border-radius: 50px;
+            font-family: 'Orbitron', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all .28s ease;
+            box-shadow: 0 6px 22px rgba(0, 212, 255, .28);
+        }
+
+        .btnNext:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, .42)
+        }
+
+        .btnNext.show {
+            display: inline-block
+        }
+
+        .clearfix::after {
+            content: '';
+            display: table;
+            clear: both
+        }
+
+        /* ══════════════════════════════════════
+   RESULTS SCREEN
+══════════════════════════════════════ */
+        .res-card {
+            max-width: 700px;
+            text-align: center
+        }
+
+        .score-ring {
+            width: 160px;
+            height: 160px;
+            position: relative;
+            margin: 0 auto 24px
+        }
+
+        .score-ring svg {
+            transform: rotate(-90deg)
+        }
+
+        .sr-track {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.07);
+            stroke-width: 12
+        }
+
+        .sr-fill {
+            fill: none;
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.6s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        .score-num {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', monospace
+        }
+
+        .s-val {
+            font-size: 38px;
+            font-weight: 900;
+            color: #fff
+        }
+
+        .s-of {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 2px
+        }
+
+        .res-quiz-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--cyan);
+            margin-bottom: 8px
+        }
+
+        .res-verdict {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(18px, 2.8vw, 28px);
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff, var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px
+        }
+
+        .res-sub {
+            color: var(--muted);
+            font-size: 13.5px;
+            line-height: 1.7;
+            margin-bottom: 28px
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            margin-bottom: 28px;
+            flex-wrap: wrap
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 22px;
+            text-align: center;
+            min-width: 90px
+        }
+
+        .stat-n {
+            font-family: 'Orbitron', monospace;
+            font-size: 26px;
+            font-weight: 900
+        }
+
+        .stat-l {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 4px;
+            letter-spacing: 1px;
+            text-transform: uppercase
+        }
+
+        .stat-ok .stat-n {
+            color: var(--green)
+        }
+
+        .stat-no .stat-n {
+            color: var(--red)
+        }
+
+        .stat-sk .stat-n {
+            color: var(--amber)
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap
+        }
+
+        .btn-home,
+        .btn-retry {
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-family: 'Orbitron', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all .28s ease
+        }
+
+        .btn-retry {
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            color: #fff;
+            box-shadow: 0 6px 24px rgba(124, 58, 237, .35)
+        }
+
+        .btn-retry:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 34px rgba(124, 58, 237, .5)
+        }
+
+        .btn-home {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, .15);
+            color: var(--text)
+        }
+
+        .btn-home:hover {
+            background: rgba(255, 255, 255, .14);
+            transform: translateY(-3px)
+        }
+
+        /* ══════════════════════════════════════
+   BACK BUTTON
+══════════════════════════════════════ */
+        #backBtn {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            z-index: 40;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, .15);
+            color: var(--text);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .25s;
+            display: none;
+            font-family: 'Inter', sans-serif
+        }
+
+        #backBtn:hover {
+            background: rgba(255, 255, 255, .16);
+            transform: translateX(-2px)
+        }
+
+        /* Q-step dots */
+        .q-dots {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 22px
+        }
+
+        .qdot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .18);
+            transition: all .4s ease
+        }
+
+        .qdot.done {
+            background: var(--green)
+        }
+
+        .qdot.cur {
+            background: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+            width: 24px;
+            border-radius: 10px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+    <canvas id="cnv"></canvas>
+    <div id="pbar">
+        <div id="pfill"></div>
+    </div>
+    <button id="backBtn">← Home</button>
+
+    <div id="app">
+
+        <!-- ══════════ HOME SCREEN ══════════ -->
+        <div class="screen active" id="s-home">
+            <div class="card home-card">
+                <div class="corner ctla"></div>
+                <div class="corner ctra"></div>
+                <div class="corner cbla"></div>
+                <div class="corner cbra"></div>
+                <span class="logo">⚙️</span>
+                <p class="brand">EngiQuiz — TechMind Platform</p>
+                <h1 class="site-title">Engineering Knowledge<br />Assessment Suite</h1>
+                <p class="home-sub">5 comprehensive quizzes across core engineering disciplines.<br />Each quiz has 5
+                    questions with a 30-second timer. Choose your subject!</p>
+                <div class="quiz-grid">
+
+                    <!-- Quiz 1 -->
+                    <div class="quiz-card" style="--qcolor:#00d4ff;--qgrad:linear-gradient(135deg,#00d4ff,#0ea5e9)"
+                        data-quiz="0" id="qcard-0">
+                        <span class="qc-badge">Q1</span>
+                        <span class="qc-icon">⚡</span>
+                        <div class="qc-title">Electronics &amp; Circuits</div>
+                        <div class="qc-desc">Ohm's Law, components, circuit analysis and basic electronics principles.
+                        </div>
+                        <div class="qc-meta"><span class="qc-tag">⏱ 5 × 30s</span><span class="qc-tag">🔌 B.Tech
+                                E&amp;E</span></div>
+                    </div>
+
+                    <!-- Quiz 2 -->
+                    <div class="quiz-card" style="--qcolor:#a78bfa;--qgrad:linear-gradient(135deg,#7c3aed,#a78bfa)"
+                        data-quiz="1" id="qcard-1">
+                        <span class="qc-badge" style="background:#a78bfa">Q2</span>
+                        <span class="qc-icon">💻</span>
+                        <div class="qc-title">Computer Science</div>
+                        <div class="qc-desc">Algorithms, data structures, complexity, OOP and CS fundamentals.</div>
+                        <div class="qc-meta"><span class="qc-tag">⏱ 5 × 30s</span><span class="qc-tag">🖥️ B.Tech
+                                CS/IT</span></div>
+                    </div>
+
+                    <!-- Quiz 3 -->
+                    <div class="quiz-card" style="--qcolor:#f59e0b;--qgrad:linear-gradient(135deg,#f59e0b,#fbbf24)"
+                        data-quiz="2" id="qcard-2">
+                        <span class="qc-badge" style="background:#f59e0b">Q3</span>
+                        <span class="qc-icon">🔧</span>
+                        <div class="qc-title">Engineering Mechanics</div>
+                        <div class="qc-desc">Newton's laws, work-energy, stress, strain and rigid body mechanics.</div>
+                        <div class="qc-meta"><span class="qc-tag">⏱ 5 × 30s</span><span class="qc-tag">⚙️ B.Tech
+                                ME/CE</span></div>
+                    </div>
+
+                    <!-- Quiz 4 -->
+                    <div class="quiz-card" style="--qcolor:#f87171;--qgrad:linear-gradient(135deg,#ef4444,#f87171)"
+                        data-quiz="3" id="qcard-3">
+                        <span class="qc-badge" style="background:#f87171">Q4</span>
+                        <span class="qc-icon">🌡️</span>
+                        <div class="qc-title">Thermodynamics</div>
+                        <div class="qc-desc">Laws of thermodynamics, heat transfer, entropy & thermodynamic cycles.
+                        </div>
+                        <div class="qc-meta"><span class="qc-tag">⏱ 5 × 30s</span><span class="qc-tag">🔥 B.Tech
+                                ME/Chem</span></div>
+                    </div>
+
+                    <!-- Quiz 5 -->
+                    <div class="quiz-card" style="--qcolor:#34d399;--qgrad:linear-gradient(135deg,#10b981,#34d399)"
+                        data-quiz="4" id="qcard-4">
+                        <span class="qc-badge" style="background:#34d399">Q5</span>
+                        <span class="qc-icon">🧮</span>
+                        <div class="qc-title">Digital Logic</div>
+                        <div class="qc-desc">Boolean algebra, logic gates, flip-flops, counters and number systems.
+                        </div>
+                        <div class="qc-meta"><span class="qc-tag">⏱ 5 × 30s</span><span class="qc-tag">🔢 B.Tech
+                                EC/CS</span></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════ QUESTION SCREEN (single, dynamic) ══════════ -->
+        <div class="screen" id="s-question">
+            <div class="card" id="q-card">
+                <div class="corner ctla"></div>
+                <div class="corner ctra"></div>
+                <div class="corner cbla"></div>
+                <div class="corner cbra"></div>
+                <div class="q-header">
+                    <span class="q-num" id="q-label">Question 1 / 5</span>
+                    <div class="q-timer">
+                        <div class="tdot"></div><span id="timerDisp">30</span>s
+                    </div>
+                </div>
+                <div class="q-dots" id="q-dots">
+                    <div class="qdot cur" id="dot0"></div>
+                    <div class="qdot" id="dot1"></div>
+                    <div class="qdot" id="dot2"></div>
+                    <div class="qdot" id="dot3"></div>
+                    <div class="qdot" id="dot4"></div>
+                </div>
+                <div class="q-topic-tag" id="q-topic">⚡ Electronics</div>
+                <h2 class="q-text" id="q-text">Loading question…</h2>
+                <div class="opts" id="q-opts"></div>
+                <div class="fbmsg" id="q-fb"></div>
+                <div class="clearfix">
+                    <button class="btnNext" id="q-next">Next →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════ RESULTS SCREEN ══════════ -->
+        <div class="screen" id="s-result">
+            <div class="card res-card">
+                <div class="corner ctla"></div>
+                <div class="corner ctra"></div>
+                <div class="corner cbla"></div>
+                <div class="corner cbra"></div>
+                <div class="score-ring">
+                    <svg viewBox="0 0 160 160" width="160" height="160">
+                        <circle class="sr-track" cx="80" cy="80" r="68" />
+                        <circle class="sr-fill" id="sr-fill" cx="80" cy="80" r="68" stroke="url(#sg)"
+                            stroke-dasharray="427.26" stroke-dashoffset="427.26" />
+                        <defs>
+                            <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#00d4ff" />
+                                <stop offset="100%" stop-color="#7c3aed" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="score-num">
+                        <span class="s-val" id="r-val">0</span>
+                        <span class="s-of">OUT OF 5</span>
+                    </div>
+                </div>
+                <p class="res-quiz-name" id="r-qname"></p>
+                <h2 class="res-verdict" id="r-verdict"></h2>
+                <p class="res-sub" id="r-sub"></p>
+                <div class="stat-row">
+                    <div class="stat stat-ok">
+                        <div class="stat-n" id="r-ok">0</div>
+                        <div class="stat-l">✅ Correct</div>
+                    </div>
+                    <div class="stat stat-no">
+                        <div class="stat-n" id="r-no">0</div>
+                        <div class="stat-l">❌ Wrong</div>
+                    </div>
+                    <div class="stat stat-sk">
+                        <div class="stat-n" id="r-sk">0</div>
+                        <div class="stat-l">⏭ Skipped</div>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn-home" id="r-home">🏠 Quiz Menu</button>
+                    <button class="btn-retry" id="r-retry">🔄 Retry Quiz</button>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- #app -->
+
+    <script>
+        /* ════════════════════════════════════
+           QUIZ DATA — 5 quizzes × 5 questions
+        ════════════════════════════════════ */
+        const QUIZZES = [
+            {
+                name: "Electronics & Circuits", icon: "⚡", color: "#00d4ff",
+                topline: "linear-gradient(90deg,#00d4ff,#0ea5e9,#7c3aed)",
+                topic: "⚡ Electronics & Circuits",
+                questions: [
+                    {
+                        q: "Which formula correctly represents Ohm's Law?",
+                        opts: ["V = I / R", "V = R / I", "V = I × R", "V = I² × R"],
+                        ans: 2
+                    },
+                    {
+                        q: "Which passive component stores energy in an electric field?",
+                        opts: ["Inductor", "Resistor", "Capacitor", "Transformer"],
+                        ans: 2
+                    },
+                    {
+                        q: "In a parallel circuit, the voltage across all branches is:",
+                        opts: ["Equal for all branches", "Different for each branch", "Zero", "Dependent on resistance only"],
+                        ans: 0
+                    },
+                    {
+                        q: "A diode is primarily used to allow current to flow in:",
+                        opts: ["Both directions equally", "One direction only", "Neither direction", "All directions"],
+                        ans: 1
+                    },
+                    {
+                        q: "Kirchhoff's Voltage Law (KVL) states that the algebraic sum of voltages around any closed loop is:",
+                        opts: ["Equal to the source voltage", "Equal to the total resistance", "Always positive", "Zero"],
+                        ans: 3
+                    }
+                ]
+            },
+            {
+                name: "Computer Science", icon: "💻", color: "#a78bfa",
+                topline: "linear-gradient(90deg,#7c3aed,#a78bfa,#ec4899)",
+                topic: "💻 Computer Science & Algorithms",
+                questions: [
+                    {
+                        q: "What is the time complexity of Binary Search on a sorted array of n elements?",
+                        opts: ["O(n)", "O(n²)", "O(log n)", "O(n log n)"],
+                        ans: 2
+                    },
+                    {
+                        q: "Which data structure follows the LIFO (Last In, First Out) principle?",
+                        opts: ["Queue", "Stack", "Linked List", "Binary Tree"],
+                        ans: 1
+                    },
+                    {
+                        q: "Which of the following sorting algorithms has O(n log n) average-case complexity?",
+                        opts: ["Bubble Sort", "Insertion Sort", "Merge Sort", "Selection Sort"],
+                        ans: 2
+                    },
+                    {
+                        q: "In Object-Oriented Programming, what is 'Encapsulation'?",
+                        opts: ["Inheriting properties from a parent class", "Overriding methods at runtime", "Hiding internal state and bundling data with methods", "Creating multiple forms of a function"],
+                        ans: 2
+                    },
+                    {
+                        q: "What does SQL stand for?",
+                        opts: ["Structured Query Language", "Sequential Query Logic", "Simple Question Language", "System Query Layer"],
+                        ans: 0
+                    }
+                ]
+            },
+            {
+                name: "Engineering Mechanics", icon: "🔧", color: "#f59e0b",
+                topline: "linear-gradient(90deg,#f59e0b,#fbbf24,#ef4444)",
+                topic: "🔧 Engineering Mechanics",
+                questions: [
+                    {
+                        q: "Newton's Second Law of Motion states that the net force on an object equals:",
+                        opts: ["Mass × Velocity", "Mass × Acceleration", "Mass / Acceleration", "Weight × Height"],
+                        ans: 1
+                    },
+                    {
+                        q: "The work done by a force is defined as:",
+                        opts: ["Force × Displacement × cos θ", "Force / Displacement", "Force × Time", "Mass × Acceleration × Time"],
+                        ans: 0
+                    },
+                    {
+                        q: "The SI unit of power is:",
+                        opts: ["Joule", "Newton", "Watt", "Pascal"],
+                        ans: 2
+                    },
+                    {
+                        q: "A body is said to be in static equilibrium when:",
+                        opts: ["Net force and net torque are both zero", "Net force is zero only", "Net velocity is zero", "Acceleration is constant"],
+                        ans: 0
+                    },
+                    {
+                        q: "Hooke's Law for elastic materials states that stress is:",
+                        opts: ["Inversely proportional to strain", "Independent of strain", "Proportional to strain (within elastic limit)", "Equal to strain always"],
+                        ans: 2
+                    }
+                ]
+            },
+            {
+                name: "Thermodynamics", icon: "🌡️", color: "#f87171",
+                topline: "linear-gradient(90deg,#ef4444,#f87171,#f59e0b)",
+                topic: "🌡️ Thermodynamics",
+                questions: [
+                    {
+                        q: "The First Law of Thermodynamics is essentially a statement of:",
+                        opts: ["Conservation of Momentum", "Conservation of Mass", "Conservation of Energy", "Entropy increase"],
+                        ans: 2
+                    },
+                    {
+                        q: "Which law of thermodynamics introduces the concept of Entropy?",
+                        opts: ["Zeroth Law", "First Law", "Second Law", "Third Law"],
+                        ans: 2
+                    },
+                    {
+                        q: "Absolute zero temperature in degrees Celsius is:",
+                        opts: ["-273.15 °C", "-100 °C", "0 °C", "-373.15 °C"],
+                        ans: 0
+                    },
+                    {
+                        q: "A thermodynamic process occurring at constant pressure is called:",
+                        opts: ["Isochoric", "Isothermal", "Isobaric", "Adiabatic"],
+                        ans: 2
+                    },
+                    {
+                        q: "The efficiency of a Carnot engine depends on:",
+                        opts: ["Only the working fluid", "The temperatures of source and sink", "The mass of the piston", "The pressure of the gas only"],
+                        ans: 1
+                    }
+                ]
+            },
+            {
+                name: "Digital Logic", icon: "🧮", color: "#34d399",
+                topline: "linear-gradient(90deg,#10b981,#34d399,#00d4ff)",
+                topic: "🧮 Digital Logic & Boolean Algebra",
+                questions: [
+                    {
+                        q: "Using the Absorption Law in Boolean algebra, A · (A + B) simplifies to:",
+                        opts: ["A + B", "A · B", "A", "B"],
+                        ans: 2
+                    },
+                    {
+                        q: "What is the output of a NAND gate when both inputs are logic 1?",
+                        opts: ["1", "0", "Undefined", "Depends on voltage"],
+                        ans: 1
+                    },
+                    {
+                        q: "How many flip-flops are required to design a MOD-16 counter?",
+                        opts: ["4", "8", "16", "3"],
+                        ans: 0
+                    },
+                    {
+                        q: "According to De Morgan's Theorem, (A + B)' is equal to:",
+                        opts: ["A' + B'", "A + B", "A' · B", "A · B'"],
+                        ans: 2
+                    },
+                    {
+                        q: "In 2's complement representation using 4 bits, the value -1 is represented as:",
+                        opts: ["0001", "1001", "1110", "1111"],
+                        ans: 3
+                    }
+                ]
+            }
+        ];
+
+        /* ════════════════════════════════════
+           TRANSITION PAIRS (per question 0-4)
+        ════════════════════════════════════ */
+        const TRANS = [
+            ['xl', 'er'],    // Q1->Q2: slide left
+            ['xflip', 'eflip'],// Q2->Q3: 3D flip
+            ['xglitch', 'eglitch'],// Q3->Q4: glitch
+            ['xzoom', 'ezoom'],    // Q4->Q5: zoom burst
+            ['xup', 'eup'],        // Q5->Result: slide up
+        ];
+        const HOME_EXIT = ['xfade', 'efade'];
+
+        /* ════════════════════════════════════
+           STATE
+        ════════════════════════════════════ */
+        let activeQuiz = null;   // quiz index 0-4
+        let activeQ = 0;      // question index 0-4
+        let scores = [];     // 1=correct, 0=wrong, -1=skipped
+        let timerID = null;
+        let timerVal = 30;
+
+        /* ════════════════════════════════════
+           PARTICLES
+        ════════════════════════════════════ */
+        (function () {
+            const cv = document.getElementById('cnv');
+            const ctx = cv.getContext('2d');
+            let W, H, pts = [];
+            const resize = () => { W = cv.width = innerWidth; H = cv.height = innerHeight };
+            resize(); window.addEventListener('resize', resize);
+            for (let i = 0; i < 55; i++) pts.push({ x: Math.random() * 1920, y: Math.random() * 1080, vx: (Math.random() - .5) * .22, vy: (Math.random() - .5) * .22, r: Math.random() * 1.4 + .4, a: Math.random() });
+            (function loop() {
+                ctx.clearRect(0, 0, W, H);
+                pts.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+                    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0,212,255,${p.a * .35})`; ctx.fill();
+                });
+                for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+                    const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.sqrt(dx * dx + dy * dy);
+                    if (d < 115) { ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.strokeStyle = `rgba(0,212,255,${.055 * (1 - d / 115)})`; ctx.lineWidth = .5; ctx.stroke() }
+                }
+                requestAnimationFrame(loop);
+            })();
+        })();
+
+        /* ════════════════════════════════════
+           SCREEN TRANSITIONS
+        ════════════════════════════════════ */
+        function goTo(fromId, toId, exitCls, enterCls, cb) {
+            const from = document.getElementById(fromId);
+            const to = document.getElementById(toId);
+            from.classList.remove('active');
+            from.classList.add(exitCls);
+            to.classList.add(enterCls);
+            setTimeout(() => {
+                from.classList.remove(exitCls);
+                to.classList.remove(enterCls);
+                to.classList.add('active');
+                if (cb) cb();
+            }, 520);
+        }
+
+        /* ════════════════════════════════════
+           PROGRESS
+        ════════════════════════════════════ */
+        function setProgress(pct) {
+            document.getElementById('pfill').style.width = pct + '%';
+        }
+
+        /* ════════════════════════════════════
+           TIMER
+        ════════════════════════════════════ */
+        function clearTimer() { clearInterval(timerID); timerID = null; }
+        function startTimer() {
+            timerVal = 30;
+            const disp = document.getElementById('timerDisp');
+            const tw = document.querySelector('.q-timer');
+            disp.textContent = timerVal;
+            tw.style.color = '';
+            clearTimer();
+            timerID = setInterval(() => {
+                timerVal--;
+                disp.textContent = timerVal;
+                if (timerVal <= 10) tw.style.color = 'var(--red)';
+                if (timerVal <= 0) { clearTimer(); handleTimeout(); }
+            }, 1000);
+        }
+
+        /* ════════════════════════════════════
+           DOTS
+        ════════════════════════════════════ */
+        function updateDots(qIdx, result) {
+            for (let i = 0; i < 5; i++) {
+                const d = document.getElementById('dot' + i);
+                d.className = 'qdot';
+                if (i < qIdx) d.classList.add('done');
+                else if (i === qIdx) d.classList.add('cur');
+            }
+        }
+
+        /* ════════════════════════════════════
+           RENDER QUESTION
+        ════════════════════════════════════ */
+        function renderQuestion(qIdx) {
+            const quiz = QUIZZES[activeQuiz];
+            const q = quiz.questions[qIdx];
+            const labels = ['A', 'B', 'C', 'D'];
+
+            document.getElementById('q-label').textContent = `Question ${qIdx + 1} / 5`;
+            document.getElementById('q-topic').textContent = quiz.topic;
+            document.getElementById('q-text').textContent = q.q;
+
+            // style top bar colour
+            const card = document.getElementById('q-card');
+            card.style.setProperty('--ctop', quiz.topline);
+
+            // dots
+            updateDots(qIdx);
+
+            // options
+            const optsEl = document.getElementById('q-opts');
+            optsEl.innerHTML = '';
+            q.opts.forEach((txt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt';
+                btn.dataset.idx = i;
+                btn.innerHTML = `<div class="opt-ltr"><span>${labels[i]}</span></div><span>${txt}</span>`;
+                btn.addEventListener('click', () => handleAnswer(i));
+                optsEl.appendChild(btn);
+            });
+
+            // feedback & next
+            const fb = document.getElementById('q-fb');
+            fb.textContent = ''; fb.className = 'fbmsg';
+            document.getElementById('q-next').className = 'btnNext';
+
+            // progress
+            setProgress(((qIdx) / 5) * 100);
+
+            // timer
+            startTimer();
+        }
+
+        /* ════════════════════════════════════
+           ANSWER HANDLING
+        ════════════════════════════════════ */
+        const posFbOk = ['🎯 Correct! Excellent engineering insight!', '⚡ Right! System verified!', '🔬 Accurate answer!', '✅ Spot on! Well done!'];
+        const posFbBad = ['❌ Wrong. The correct answer is highlighted.', '🔴 Incorrect. Review this concept.', '⚠️ Not quite! The right answer is shown.'];
+
+        function handleAnswer(chosen) {
+            clearTimer();
+            const quiz = QUIZZES[activeQuiz];
+            const correct = quiz.questions[activeQ].ans;
+            const btns = document.querySelectorAll('.opt');
+            btns.forEach(b => b.classList.add('off'));
+            const isOk = (chosen === correct);
+            scores[activeQ] = isOk ? 1 : 0;
+            if (isOk) {
+                btns[chosen].classList.add('ok');
+            } else {
+                btns[chosen].classList.add('bad');
+                btns[correct].classList.add('ok');
+            }
+            showFb(isOk, false);
+            document.getElementById('q-next').classList.add('show');
+        }
+
+        function handleTimeout() {
+            const quiz = QUIZZES[activeQuiz];
+            const correct = quiz.questions[activeQ].ans;
+            const btns = document.querySelectorAll('.opt');
+            btns.forEach(b => b.classList.add('off'));
+            btns[correct].classList.add('ok');
+            scores[activeQ] = -1;
+            showFb(false, true);
+            document.getElementById('q-next').classList.add('show');
+        }
+
+        function showFb(isOk, timeout) {
+            const fb = document.getElementById('q-fb');
+            fb.classList.add('show');
+            if (timeout) {
+                fb.textContent = "⏱ Time's up! Correct answer highlighted.";
+                fb.className = 'fbmsg show fb-bad';
+            } else if (isOk) {
+                fb.textContent = posFbOk[Math.floor(Math.random() * posFbOk.length)];
+                fb.className = 'fbmsg show fb-ok';
+            } else {
+                fb.textContent = posFbBad[Math.floor(Math.random() * posFbBad.length)];
+                fb.className = 'fbmsg show fb-bad';
+            }
+        }
+
+        /* ════════════════════════════════════
+           NEXT QUESTION / RESULTS
+        ════════════════════════════════════ */
+        document.getElementById('q-next').addEventListener('click', () => {
+            clearTimer();
+            if (activeQ < 4) {
+                // animate out current question, render next
+                const card = document.getElementById('q-card');
+                const [ex, en] = TRANS[activeQ];
+                card.classList.add(ex);
+                setTimeout(() => {
+                    card.classList.remove(ex);
+                    activeQ++;
+                    renderQuestion(activeQ);
+                    card.classList.add(en);
+                    setTimeout(() => card.classList.remove(en), 520);
+                }, 520);
+            } else {
+                // go to results
+                setProgress(100);
+                goTo('s-question', 's-result', TRANS[4][0], TRANS[4][1], showResults);
+            }
+        });
+
+        /* ════════════════════════════════════
+           SHOW RESULTS
+        ════════════════════════════════════ */
+        function showResults() {
+            const ok = scores.filter(x => x === 1).length;
+            const bad = scores.filter(x => x === 0).length;
+            const sk = scores.filter(x => x === -1).length;
+            const pct = ok / 5;
+            const circumference = 427.26;
+
+            document.getElementById('r-val').textContent = ok;
+            document.getElementById('r-ok').textContent = ok;
+            document.getElementById('r-no').textContent = bad;
+            document.getElementById('r-sk').textContent = sk;
+            document.getElementById('r-qname').textContent = QUIZZES[activeQuiz].name.toUpperCase();
+
+            let verdict, sub;
+            if (pct === 1) { verdict = '🏆 Perfect Score!'; sub = 'Outstanding! You have mastered this engineering domain completely!' }
+            else if (pct >= .8) { verdict = '🚀 Excellent!'; sub = 'Great performance! You\'re close to mastering this domain.' }
+            else if (pct >= .6) { verdict = '⚙️ Good Work!'; sub = 'Solid foundation! Focus on the questions you missed to level up.' }
+            else if (pct >= .4) { verdict = '📚 Keep Studying!'; sub = 'You\'re on the right path. Review the fundamentals and try again!' }
+            else { verdict = '🔧 Needs Improvement'; sub = 'Don\'t give up — every expert was once a beginner. Keep learning!' }
+
+            document.getElementById('r-verdict').textContent = verdict;
+            document.getElementById('r-sub').textContent = sub;
+
+            setTimeout(() => {
+                document.getElementById('sr-fill').style.strokeDashoffset = circumference - pct * circumference;
+            }, 200);
+        }
+
+        /* ════════════════════════════════════
+           START QUIZ
+        ════════════════════════════════════ */
+        function startQuiz(idx) {
+            activeQuiz = idx;
+            activeQ = 0;
+            scores = [-1, -1, -1, -1, -1];
+            document.getElementById('pbar').style.display = 'block';
+            document.getElementById('backBtn').style.display = 'block';
+            goTo('s-home', 's-question', HOME_EXIT[0], HOME_EXIT[1], () => {
+                renderQuestion(0);
+            });
+        }
+
+        /* ════════════════════════════════════
+           HOME
+        ════════════════════════════════════ */
+        function goHome() {
+            clearTimer();
+            document.getElementById('pbar').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'none';
+            setProgress(0);
+            // determine which screen is active
+            const fromQ = document.getElementById('s-question').classList.contains('active') ? 's-question' : 's-result';
+            goTo(fromQ, 's-home', HOME_EXIT[0], HOME_EXIT[1]);
+        }
+
+        /* ════════════════════════════════════
+           EVENT LISTENERS
+        ════════════════════════════════════ */
+        // Quiz cards on home
+        document.querySelectorAll('.quiz-card').forEach(card => {
+            card.addEventListener('click', () => {
+                startQuiz(parseInt(card.dataset.quiz));
+            });
+        });
+
+        // Back button
+        document.getElementById('backBtn').addEventListener('click', goHome);
+
+        // Results buttons
+        document.getElementById('r-home').addEventListener('click', () => {
+            document.getElementById('backBtn').style.display = 'none';
+            goTo('s-result', 's-home', HOME_EXIT[0], HOME_EXIT[1], () => {
+                document.getElementById('pbar').style.display = 'none';
+                setProgress(0);
+            });
+        });
+        document.getElementById('r-retry').addEventListener('click', () => {
+            goTo('s-result', 's-question', TRANS[4][1], TRANS[4][0], () => {
+                activeQ = 0;
+                scores = [-1, -1, -1, -1, -1];
+                renderQuestion(0);
+            });
+        });
+    </script>
+</body>
+
+</html>
